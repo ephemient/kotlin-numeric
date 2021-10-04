@@ -1,0 +1,25 @@
+[versions]
+asm = "9.2"
+dependency-updates = "0.39.0"
+detekt = "1.18.1"
+dokka = "1.5.30"
+jetCheck = "0.2.1"
+junit-jupiter = "5.8.1"
+kotlin = "1.5.21"
+kotlinpoet = "1.10.1"
+kotlinter = "3.6.0"
+kotlinx-metadata = "0.3.0"
+
+[plugins]
+dependency-updates = { id = "com.github.ben-manes.versions", version.ref = "dependency-updates" }
+detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
+dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
+kotlinter = { id = "org.jmailen.kotlinter", version.ref = "kotlinter" }
+
+[libraries]
+asm = { module = "org.ow2.asm:asm", version.ref = "asm" }
+jetCheck = { module = "com.github.jetbrains:jetCheck", version.ref = "jetCheck" }
+junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit-jupiter" }
+junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit-jupiter" }
+kotlinpoet = { module = "com.squareup:kotlinpoet", version.ref = "kotlinpoet" }
+kotlinx-metadata-jvm = { module = "org.jetbrains.kotlinx:kotlinx-metadata-jvm", version.ref = "kotlinx-metadata" }
