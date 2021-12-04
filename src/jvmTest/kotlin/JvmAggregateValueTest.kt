@@ -19,31 +19,40 @@ import kotlin.test.assertEquals
 class JvmAggregateValueTest {
     @Test
     fun testIntPair() {
-        testAggregateValue(::IntPair, IntPair::copy, integers(), IntPair::first, IntPair::second)
+        testAggregateValue(
+            cast<(Int, Int) -> IntPair, KFunction<IntPair>>(::IntPair), IntPair::copy, integers(),
+            IntPair::first, IntPair::second,
+        )
     }
 
     @Test
     fun testFloatPair() {
-        testAggregateValue(::FloatPair, FloatPair::copy, floats(), FloatPair::first, FloatPair::second)
+        testAggregateValue(
+            cast<(Float, Float) -> FloatPair, KFunction<FloatPair>>(::FloatPair), FloatPair::copy, floats(),
+            FloatPair::first, FloatPair::second,
+        )
     }
 
     @Test
     fun testShortPair() {
-        testAggregateValue(::ShortPair, ShortPair::copy, shorts(), ShortPair::first, ShortPair::second)
+        testAggregateValue(
+            cast<(Short, Short) -> ShortPair, KFunction<ShortPair>>(::ShortPair), ShortPair::copy, shorts(),
+            ShortPair::first, ShortPair::second,
+        )
     }
 
     @Test
     fun testShortQuad() {
         testAggregateValue(
-            ::ShortQuad, ShortQuad::copy, shorts(),
-            ShortQuad::first, ShortQuad::second, ShortQuad::third, ShortQuad::fourth,
+            cast<(Short, Short, Short, Short) -> ShortQuad, KFunction<ShortQuad>>(::ShortQuad),
+            ShortQuad::copy, shorts(), ShortQuad::first, ShortQuad::second, ShortQuad::third, ShortQuad::fourth,
         )
     }
 
     @Test
     fun testByteQuad() {
         testAggregateValue(
-            ::ByteQuad, ByteQuad::copy, bytes(),
+            cast<(Byte, Byte, Byte, Byte) -> ByteQuad, KFunction<ByteQuad>>(::ByteQuad), ByteQuad::copy, bytes(),
             ByteQuad::first, ByteQuad::second, ByteQuad::third, ByteQuad::fourth,
         )
     }
@@ -51,12 +60,15 @@ class JvmAggregateValueTest {
     @Test
     fun testByteOct() {
         testAggregateValue(
-            ::ByteOct, ByteOct::copy, bytes(),
-            ByteOct::first, ByteOct::second, ByteOct::third, ByteOct::fourth,
+            cast<(Byte, Byte, Byte, Byte, Byte, Byte, Byte, Byte) -> ByteOct, KFunction<ByteOct>>(::ByteOct),
+            ByteOct::copy, bytes(), ByteOct::first, ByteOct::second, ByteOct::third, ByteOct::fourth,
             ByteOct::fifth, ByteOct::sixth, ByteOct::seventh, ByteOct::eighth,
         )
     }
 }
+
+@Suppress("NOTHING_TO_INLINE", "UNCHECKED_CAST")
+private inline fun <T, U> cast(value: T): U = value as U
 
 private inline fun <reified T : Any, U> testAggregateValue(
     constructor: KFunction<T>,
