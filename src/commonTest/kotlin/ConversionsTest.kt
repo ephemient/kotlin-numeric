@@ -2,6 +2,7 @@ package com.github.ephemient.kotlin.numeric
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.fail
 
 class ConversionsTest {
@@ -408,7 +409,7 @@ class ConversionsTest {
                     t.toString(),
                 )
             } else {
-                assertThrows<ArithmeticException>(t.toString()) { t.toUExact() }
+                assertFailsWith<ArithmeticException>(t.toString()) { t.toUExact() }
             }
         }
     }

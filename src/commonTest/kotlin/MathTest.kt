@@ -4,6 +4,7 @@ import kotlin.jvm.JvmName
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class MathTest {
     @Test
@@ -11,7 +12,7 @@ class MathTest {
         val c = a.toBigInteger() + b.toBigInteger()
         when {
             c < Long.MIN_VALUE.toBigInteger() || c > Long.MAX_VALUE.toBigInteger() ->
-                assertThrows<ArithmeticException>("$a + $b") { a addExact b }
+                assertFailsWith<ArithmeticException>("$a + $b") { a addExact b }
             else -> assertEquals(c.toLong(), a addExact b, "$a + $b")
         }
     }
@@ -21,7 +22,7 @@ class MathTest {
         val c = a.toBigInteger() + b.toBigInteger()
         when {
             c < ULong.MIN_VALUE.toBigInteger() || c > ULong.MAX_VALUE.toBigInteger() ->
-                assertThrows<ArithmeticException>("$a + $b") { a addExact b }
+                assertFailsWith<ArithmeticException>("$a + $b") { a addExact b }
             else -> assertEquals(c.toLong().toULong(), a addExact b, "$a + $b")
         }
     }
@@ -31,7 +32,7 @@ class MathTest {
         val c = a.toBigInteger() + b.toBigInteger()
         when {
             c < Int.MIN_VALUE.toBigInteger() || c > Int.MAX_VALUE.toBigInteger() ->
-                assertThrows<ArithmeticException>("$a + $b") { a addExact b }
+                assertFailsWith<ArithmeticException>("$a + $b") { a addExact b }
             else -> assertEquals(c.toInt(), a addExact b, "$a + $b")
         }
     }
@@ -41,7 +42,7 @@ class MathTest {
         val c = a.toBigInteger() + b.toBigInteger()
         when {
             c < UInt.MIN_VALUE.toBigInteger() || c > UInt.MAX_VALUE.toBigInteger() ->
-                assertThrows<ArithmeticException>("$a + $b") { a addExact b }
+                assertFailsWith<ArithmeticException>("$a + $b") { a addExact b }
             else -> assertEquals(c.toInt().toUInt(), a addExact b, "$a + $b")
         }
     }
@@ -51,7 +52,7 @@ class MathTest {
         val c = a.toBigInteger() - b.toBigInteger()
         when {
             c < Long.MIN_VALUE.toBigInteger() || c > Long.MAX_VALUE.toBigInteger() ->
-                assertThrows<ArithmeticException>("$a - $b") { a subtractExact b }
+                assertFailsWith<ArithmeticException>("$a - $b") { a subtractExact b }
             else -> assertEquals(c.toLong(), a subtractExact b, "$a - $b")
         }
     }
@@ -61,7 +62,7 @@ class MathTest {
         val c = a.toBigInteger() - b.toBigInteger()
         when {
             c < ULong.MIN_VALUE.toBigInteger() || c > ULong.MAX_VALUE.toBigInteger() ->
-                assertThrows<ArithmeticException>("$a - $b") { a subtractExact b }
+                assertFailsWith<ArithmeticException>("$a - $b") { a subtractExact b }
             else -> assertEquals(c.toLong().toULong(), a subtractExact b, "$a - $b")
         }
     }
@@ -71,7 +72,7 @@ class MathTest {
         val c = a.toBigInteger() - b.toBigInteger()
         when {
             c < Int.MIN_VALUE.toBigInteger() || c > Int.MAX_VALUE.toBigInteger() ->
-                assertThrows<ArithmeticException>("$a - $b") { a subtractExact b }
+                assertFailsWith<ArithmeticException>("$a - $b") { a subtractExact b }
             else -> assertEquals(c.toInt(), a subtractExact b, "$a - $b")
         }
     }
@@ -81,7 +82,7 @@ class MathTest {
         val c = a.toBigInteger() - b.toBigInteger()
         when {
             c < UInt.MIN_VALUE.toBigInteger() || c > UInt.MAX_VALUE.toBigInteger() ->
-                assertThrows<ArithmeticException>("$a - $b") { a subtractExact b }
+                assertFailsWith<ArithmeticException>("$a - $b") { a subtractExact b }
             else -> assertEquals(c.toInt().toUInt(), a subtractExact b, "$a - $b")
         }
     }
@@ -91,7 +92,7 @@ class MathTest {
         val c = a.toBigInteger() * b.toBigInteger()
         when {
             c < Long.MIN_VALUE.toBigInteger() || c > Long.MAX_VALUE.toBigInteger() ->
-                assertThrows<ArithmeticException>("$a * $b") { a multiplyExact b }
+                assertFailsWith<ArithmeticException>("$a * $b") { a multiplyExact b }
             else -> assertEquals(c.toLong(), a multiplyExact b, "$a * $b")
         }
     }
@@ -101,7 +102,7 @@ class MathTest {
         val c = a.toBigInteger() * b.toBigInteger()
         when {
             c < ULong.MIN_VALUE.toBigInteger() || c > ULong.MAX_VALUE.toBigInteger() ->
-                assertThrows<ArithmeticException>("$a * $b") { a multiplyExact b }
+                assertFailsWith<ArithmeticException>("$a * $b") { a multiplyExact b }
             else -> assertEquals(c.toLong().toULong(), a multiplyExact b, "$a * $b")
         }
     }
@@ -111,7 +112,7 @@ class MathTest {
         val c = a.toBigInteger() * b.toBigInteger()
         when {
             c < Int.MIN_VALUE.toBigInteger() || c > Int.MAX_VALUE.toBigInteger() ->
-                assertThrows<ArithmeticException>("$a * $b") { a multiplyExact b }
+                assertFailsWith<ArithmeticException>("$a * $b") { a multiplyExact b }
             else -> assertEquals(c.toInt(), a multiplyExact b, "$a * $b")
         }
     }
@@ -121,8 +122,36 @@ class MathTest {
         val c = a.toBigInteger() * b.toBigInteger()
         when {
             c < UInt.MIN_VALUE.toBigInteger() || c > UInt.MAX_VALUE.toBigInteger() ->
-                assertThrows<ArithmeticException>("$a * $b") { a multiplyExact b }
+                assertFailsWith<ArithmeticException>("$a * $b") { a multiplyExact b }
             else -> assertEquals(c.toInt().toUInt(), a multiplyExact b, "$a * $b")
+        }
+    }
+
+    @Test
+    fun testLongDivideExact(): Unit = forAllPairs(random::nextLongGeometric) { a, b ->
+        if (b == 0L) {
+            assertFailsWith<ArithmeticException>("$a / $b") { a divideExact b }
+        } else {
+            val c = a.toBigInteger() / b.toBigInteger()
+            when {
+                c < Long.MIN_VALUE.toBigInteger() || c > Long.MAX_VALUE.toBigInteger() ->
+                    assertFailsWith<ArithmeticException>("$a * $b") { a divideExact b }
+                else -> assertEquals(c.toLong(), a divideExact b, "$a / $b")
+            }
+        }
+    }
+
+    @Test
+    fun testIntDivideExact(): Unit = forAllPairs(random::nextIntGeometric) { a, b ->
+        if (b == 0) {
+            assertFailsWith<ArithmeticException>("$a / $b") { a divideExact b }
+        } else {
+            val c = a.toBigInteger() / b.toBigInteger()
+            when {
+                c < Int.MIN_VALUE.toBigInteger() || c > Int.MAX_VALUE.toBigInteger() ->
+                    assertFailsWith<ArithmeticException>("$a * $b") { a divideExact b }
+                else -> assertEquals(c.toInt(), a divideExact b, "$a / $b")
+            }
         }
     }
 
@@ -280,6 +309,40 @@ class MathTest {
             },
             a multiplySaturating b, "$a * $b"
         )
+    }
+
+    @Test
+    fun testLongDivideSaturating(): Unit = forAllPairs(random::nextLongGeometric) { a, b ->
+        if (b == 0L) {
+            assertFailsWith<ArithmeticException>("$a / $b") { a divideSaturating b }
+        } else {
+            val c = a.toBigInteger() / b.toBigInteger()
+            assertEquals(
+                when {
+                    c < Long.MIN_VALUE.toBigInteger() -> Long.MIN_VALUE
+                    c > Long.MAX_VALUE.toBigInteger() -> Long.MAX_VALUE
+                    else -> c.toLong()
+                },
+                a divideSaturating b, "$a / $b"
+            )
+        }
+    }
+
+    @Test
+    fun testIntDivideSaturating(): Unit = forAllPairs(random::nextIntGeometric) { a, b ->
+        if (b == 0) {
+            assertFailsWith<ArithmeticException>("$a / $b") { a divideSaturating b }
+        } else {
+            val c = a.toBigInteger() / b.toBigInteger()
+            assertEquals(
+                when {
+                    c < Int.MIN_VALUE.toBigInteger() -> Int.MIN_VALUE
+                    c > Int.MAX_VALUE.toBigInteger() -> Int.MAX_VALUE
+                    else -> c.toInt()
+                },
+                a divideSaturating b, "$a / $b"
+            )
+        }
     }
 
     private val random = Random(MathTest::class.hashCode())
