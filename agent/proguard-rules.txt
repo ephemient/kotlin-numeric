@@ -1,0 +1,13 @@
+-flattenpackagehierarchy com.github.ephemient.kotlin.numeric.agent.internal
+-keepattributes EnclosingMethod, Exceptions, InnerClasses, LineNumberTable, Signature, SourceFile
+-keepnames class com.github.ephemient.kotlin.numeric.** {
+    *;
+}
+-keep class com.github.ephemient.kotlin.numeric.agent.Agent {
+    premain(java.lang.String, java.lang.instrument.Instrumentation);
+    agentmain(java.lang.String, java.lang.instrument.Instrumentation);
+}
+-assumenosideeffects class kotlin.jvm.internal.Intrinsics {
+    static void checkNotNullExpressionValue(java.lang.Object, java.lang.String);
+    static void checkNotNullParameter(java.lang.Object, java.lang.String);
+}

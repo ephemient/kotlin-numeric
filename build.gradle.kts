@@ -6,7 +6,7 @@ import org.jmailen.gradle.kotlinter.tasks.FormatTask
 import org.jmailen.gradle.kotlinter.tasks.LintTask
 
 plugins {
-    kotlin("multiplatform") version libs.versions.kotlin.get()
+    kotlin("multiplatform")
     alias(libs.plugins.dependency.updates)
     alias(libs.plugins.detekt)
     alias(libs.plugins.dokka)
