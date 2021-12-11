@@ -62,9 +62,11 @@ val generateConversions by tasks.registering(ConversionsGenerator::class) {
     expectExact.add("kotlin.Long" to "kotlin.Int")
 }
 
+val nativeTargets = setOf("linuxX64", "linuxArm64", "mingwX86", "mingwX64", "macosX64", "macosArm64")
+
 kotlin {
     jvm()
-    js(IR) {
+    js(BOTH) {
         browser {
             testTask {
                 useKarma {
@@ -78,28 +80,57 @@ kotlin {
             }
         }
     }
-    linuxX64()
+    for (nativeTarget in nativeTargets) {
+        targetFromPreset(presets[nativeTarget])
+    }
+    targets.all {
+        compilations.all {
+            kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.ExperimentalUnsignedTypes"
+        }
+    }
 
     sourceSets {
-        val commonMain by getting {
+        for ((compilation, parentCompilation) in mapOf("Main" to null, "Test" to "Main")) {
+            val nonJvm = create("nonJvm$compilation") {
+                dependsOn(getByName("common$compilation"))
+                parentCompilation?.also { dependsOn(getByName("nonJvm$it")) }
+            }
+            getByName("js$compilation") {
+                dependsOn(nonJvm)
+                parentCompilation?.also { dependsOn(getByName("js$it")) }
+            }
+            val native = create("native$compilation") {
+                dependsOn(nonJvm)
+                parentCompilation?.also { dependsOn(getByName("native$it")) }
+            }
+            val parents = nativeTargets.groupingBy { nativeTarget -> nativeTarget.takeWhile { it.isLowerCase() } }
+                .eachCountTo(mutableMapOf())
+                .apply { values.retainAll { it > 1 } }
+                .mapValues { (nativeParent, _) ->
+                    create("$nativeParent$compilation") {
+                        dependsOn(native)
+                        parentCompilation?.also { dependsOn(getByName("$nativeParent$it")) }
+                    }
+                }
+            for (nativeTarget in nativeTargets) {
+                getByName("$nativeTarget$compilation") {
+                    dependsOn(parents[nativeTarget.takeWhile { it.isLowerCase() }] ?: native)
+                    parentCompilation?.also { dependsOn(getByName("$nativeTarget$it")) }
+                }
+            }
+        }
+
+        getByName("commonMain") {
             kotlin.srcDir(generateAggregateValues.flatMap { it.outputDirectory })
             kotlin.srcDir(generateConversions.flatMap { it.outputDirectory })
         }
-        val jvmMain by getting { dependsOn(commonMain) }
-        val nonJvmMain by creating { dependsOn(commonMain) }
-        val jsMain by getting { dependsOn(nonJvmMain) }
-        val nativeMain by creating { dependsOn(nonJvmMain) }
-        val linuxX64Main by getting { dependsOn(nativeMain) }
-
-        val commonTest by getting {
+        getByName("commonTest") {
             dependencies {
                 implementation(kotlin("test-common"))
                 implementation(kotlin("test-annotations-common"))
             }
         }
         getByName("jvmTest") {
-            dependsOn(commonTest)
-            dependsOn(jvmMain)
             dependencies {
                 implementation(kotlin("reflect"))
                 implementation(kotlin("test-junit5"))
@@ -110,30 +141,10 @@ kotlin {
                 runtimeOnly(libs.junit.jupiter.engine)
             }
         }
-        val nonJvmTest by creating {
-            dependsOn(commonTest)
-            dependsOn(nonJvmMain)
-        }
         getByName("jsTest") {
-            dependsOn(nonJvmTest)
-            dependsOn(jsMain)
             dependencies {
                 implementation(kotlin("test-js"))
             }
-        }
-        val nativeTest by creating {
-            dependsOn(nonJvmTest)
-            dependsOn(nativeMain)
-        }
-        getByName("linuxX64Test") {
-            dependsOn(nativeTest)
-            dependsOn(linuxX64Main)
-        }
-    }
-
-    targets.all {
-        compilations.all {
-            kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.ExperimentalUnsignedTypes"
         }
     }
 }

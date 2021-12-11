@@ -19,7 +19,8 @@ dependencies {
 }
 
 tasks.test {
-    inputs.files(agent)
+    val agentJars = files(provider { agent.resolve() }).builtBy(agent)
+    inputs.files(agentJars)
     useJUnitPlatform()
-    jvmArgumentProviders.add { listOf("-javaagent:${agent.resolve().single()}=") }
+    jvmArgumentProviders.add { agentJars.map { "-javaagent:$it" } }
 }

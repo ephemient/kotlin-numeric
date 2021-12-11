@@ -2,9 +2,12 @@ plugins {
     kotlin("jvm")
 }
 
+@Suppress("MagicNumber")
+val jvmTarget = JavaLanguageVersion.of(8)
+
 kotlin {
     jvmToolchain {
-        (this as JavaToolchainSpec).languageVersion.set(JavaLanguageVersion.of(8))
+        (this as JavaToolchainSpec).languageVersion.set(jvmTarget)
     }
 }
 
@@ -46,7 +49,7 @@ val fatJar by tasks.registering(Jar::class) {
 val shadowJar by tasks.registering(JavaExec::class) {
     javaLauncher.set(
         javaToolchains.launcherFor {
-            languageVersion.set(JavaLanguageVersion.of(8))
+            languageVersion.set(jvmTarget)
         }
     )
     inputs.files(r8, "proguard-rules.txt", fatJar)
@@ -56,7 +59,9 @@ val shadowJar by tasks.registering(JavaExec::class) {
     args("--release", "--classfile")
     argumentProviders.add { listOf("--output", outputs.files.singleFile.toString()) }
     argumentProviders.add { listOf("--pg-conf", file("proguard-rules.txt").toString()) }
-    argumentProviders.add { (listOf("--lib", javaLauncher.get().metadata.installationPath.toString())) }
+    argumentProviders.add {
+        (listOf("--lib", javaLauncher.get().metadata.installationPath.toString()))
+    }
     argumentProviders.add { listOf(fatJar.get().archiveFile.get().asFile.toString()) }
 }
 
@@ -68,8 +73,11 @@ val shadowJarTest by tasks.registering {
         zipTree(jar).matching {
             exclude("META-INF/**")
             exclude("com/github/ephemient/kotlin/numeric/agent/**")
+            exclude("com/github/ephemient/kotlin/numeric/annotations/**")
         }.visit { badPaths.add(path) }
-        if (badPaths.isNotEmpty()) throw GradleException("$jar contained extranous paths: $badPaths")
+        if (badPaths.isNotEmpty()) {
+            throw GradleException("$jar contained extranous paths: $badPaths")
+        }
     }
 }
 
@@ -81,8 +89,11 @@ val shadow by configurations.creating {
         attribute(Category.CATEGORY_ATTRIBUTE, objects.named(Category.LIBRARY))
         attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, objects.named(LibraryElements.JAR))
         attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.SHADOWED))
-        attribute(TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE, 8)
-        attribute(TargetJvmEnvironment.TARGET_JVM_ENVIRONMENT_ATTRIBUTE, objects.named(TargetJvmEnvironment.STANDARD_JVM))
+        attribute(TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE, jvmTarget.asInt())
+        attribute(
+            TargetJvmEnvironment.TARGET_JVM_ENVIRONMENT_ATTRIBUTE,
+            objects.named(TargetJvmEnvironment.STANDARD_JVM)
+        )
     }
     outgoing {
         capability("com.github.ephemient.kotlin.numeric:agent:1")
