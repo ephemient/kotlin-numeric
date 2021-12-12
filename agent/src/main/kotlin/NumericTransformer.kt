@@ -27,16 +27,16 @@ internal class NumericTransformer(private val args: Map<String, Mode>) : ClassFi
             it.substringBeforeLast('.', "").ifEmpty { null }
         }.firstNotNullOfOrNull { args[it] } ?: Mode.UNCHECKED
         val reader = ClassReader(classfileBuffer)
+        if (reader.access and (Opcodes.ACC_ANNOTATION or Opcodes.ACC_MODULE) != 0) return null
         val writer = ClassWriter(reader, 0)
         var didTransform = false
         reader.accept(object : ClassVisitor(Opcodes.ASM9, writer) {
             private var classMode = mode
 
-            override fun visitAnnotation(descriptor: String, visible: Boolean): AnnotationVisitor {
-                return visitAnnotation(descriptor, super.visitAnnotation(descriptor, visible)) {
-                    classMode = it
-                }
-            }
+            override fun visitAnnotation(descriptor: String, visible: Boolean): AnnotationVisitor = visitAnnotation(
+                descriptor,
+                super.visitAnnotation(descriptor, visible)
+            ) { classMode = it }
 
             override fun visitMethod(
                 access: Int,
@@ -50,14 +50,10 @@ internal class NumericTransformer(private val args: Map<String, Mode>) : ClassFi
             ) {
                 private var methodMode = classMode
 
-                override fun visitAnnotation(
-                    descriptor: String,
-                    visible: Boolean
-                ): AnnotationVisitor {
-                    return visitAnnotation(descriptor, super.visitAnnotation(descriptor, visible)) {
-                        methodMode = it
-                    }
-                }
+                override fun visitAnnotation(descriptor: String, visible: Boolean): AnnotationVisitor = visitAnnotation(
+                    descriptor,
+                    super.visitAnnotation(descriptor, visible)
+                ) { methodMode = it }
 
                 override fun visitInsn(opcode: Int) {
                     if (methodMode == Mode.CHECKED) {
